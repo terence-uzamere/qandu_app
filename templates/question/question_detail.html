@@ -3,4 +3,7 @@
 <h1>{{ question.title }}</h1>
 <p>{{ question.description }}</p>
 <p>Asked By {{ question.user.username }} on {{ question.created_at }}</p>
+{% if question.user == user %}
+<p><a href="{% url 'question_update' pk=question.id %}">Edit Question</a></p>
+{% endif %}
 {% endblock % }
