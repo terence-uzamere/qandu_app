@@ -2,13 +2,13 @@
 {% block content %}
 {% if user.is_authenticated %}
 <div class="jumbotron">
-  <hi>Welcome Back!</h1>
+  <h1>Welcome Back!</h1>
 </div>
 {% else %}
 <div class="jumbotron">
   <h1>Welcome to QandU</h1>
   <p>The Question-and-Answer website for QU students</p>
-  <p><a class="btn btn-lg btn=primary" href="{% url 'registration_register' %}">Sign Up</a></p>
+  <p><a class="btn btn-lg btn-primary" href="{% url 'registration_register' %}">Sign Up</a></p>
 </div>
 {% endif %}
 {% endblock %}

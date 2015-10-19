@@ -1,8 +1,9 @@
-from django.shortcuts import render
-from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, DeleteView
+from django.shortcuts import render, redirect
+from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, DeleteView, FormView
 from django.core.urlresolvers import reverse_lazy
 from django.core.exceptions import PermissionDenied
 from .models import *
+from .forms import *
 
 # Create your views here.
 class Home(TemplateView):
@@ -31,6 +32,8 @@ class QuestionDetailView(DetailView):
     question = question.object.get(id=self.kwargs['pk'])
     answers = Answer.object.filter(question=question)
     context['answers'] = answers
+    user_answers = Answer.object.filter(question=question, user=self.request.user)
+    context['user_answers'] = user_answers
     return context
 
 class QuestionUpdateView(UpdateView):
@@ -64,6 +67,9 @@ class AnswerCreateView(CreateView):
     return self.object.question.get_absolute_url()
 
   def form_valid(self, form):
+    question = Question.objects.get(id=self.kwargs['pk'])
+    if Answer.objects.filter(question=question, user=self.request.user).exists():
+      raise PermissionDenied()
     form.instance.user = self.request.user
     form.instance.question = Question.objects.get(id-self.kwargs['pk'])
     return super(AnswerCreateView, self).form_valid(form)
@@ -96,3 +102,17 @@ class AnswerDeleteView(DeleteView):
     if object.user != self.request.user:
       raise PermissionDenied()
     return object
+
+class VoteFormView(FormView):
+  form_class = VoteForm
+
+  def form_valid(self, form):
+    user = self.request.user
+    question = Question.objects.get(pk=form.data["question"])
+    prev_votes = Vote.objects.filter(user=user, question=question)
+    has_voted = (prev_votes_count()>0)
+    if not has_voted:
+      Vote.objects.create(user=user, question=question)
+    else:
+      prev_votes[0].delete()
+    return redirect('question_list')
